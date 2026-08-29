@@ -1,10 +1,11 @@
 {
-  "$comment": "上游来源配置。sources 按顺序尝试;每个条目内 mirrors 是候选仓库列表,第一个可用的生效。原仓库消失时,把可用的 fork 加进 mirrors 即可,无需改代码。",
+  "$comment": "上游来源配置。sources 按顺序尝试;每个条目内 mirrors 是候选仓库列表,第一个可用的生效。原仓库消失时,把可用的 fork 加进 mirrors 即可,无需改代码。cdn 是 jsDelivr 兜底模板({repo}/{branch}/{path} 占位),在 raw.githubusercontent.com 被墙/被限时优先使用——注意 jsDelivr 有缓存(最长约 24h),上游刚更新时兜底源可能短暂滞后,仅作容灾不作常规路径。",
   "sources": [
     {
       "name": "izhadu",
       "repo": "izhadu/GreasyFork",
       "mirrors": [],
+      "cdn": "https://cdn.jsdelivr.net/gh/{repo}@{branch}/{path}",
       "branch": "main",
       "files": [
         { "local": "sources/hf-dict.json", "remote": "HuggingFace-Chinese/dict.json" }
@@ -12,3 +13,4 @@
     }
   ]
 }
+

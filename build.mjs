@@ -24,7 +24,7 @@ const read = (name) => readFileSync(join(root, name), 'utf8');
 /* ====== 发布配置 ====== */
 const REPO_OWNER = '3304711297';
 const REPO_NAME = 'huggingface-chinese-plus';
-const OUR_BASE = '1.1'; // 我们自己的功能版本号,有功能性改动时手动递增
+const OUR_BASE = '1.2'; // 我们自己的功能版本号,有功能性改动(含引擎修复/兼容性调整)时手动递增
 
 const state = JSON.parse(readFileSync(join(root, 'upstream.state.json'), 'utf8'));
 const BUILD_NUMBER = state.buildNumber || 1;
@@ -42,6 +42,7 @@ const HEADER = `// ==UserScript==
 // @license      GPL-3.0
 // @icon         https://huggingface.co/front/assets/huggingface_logo-noborder.svg
 // @match        https://huggingface.co/*
+// @match        https://*.huggingface.co/*
 // @match        https://hf-mirror.com/*
 // @noframes     页面内嵌 iframe 不注入,避免重复翻译与重复菜单命令
 // @run-at       document-start

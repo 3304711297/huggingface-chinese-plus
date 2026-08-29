@@ -136,27 +136,57 @@ function extractDictVersion(dictText) {
 }
 
 /**
- * 尝试从一组候选仓库拉取一个 source 的全部文件
+ * 生成单个上游文件的全部候选 URL(按优先级):
+ *   1. 主仓库 raw.githubusercontent.com
+ *   2. cdn 模板(如 jsDelivr,raw 被墙/被限时容灾;有缓存,可能滞后)
+ *   3. 各镜像仓库 raw 地址
+ */
+function candidateUrls(source, file) {
+    const urls = [
+        `https://raw.githubusercontent.com/${source.repo}/${source.branch}/${file.remote}`,
+    ];
+    if (source.cdn) {
+        urls.push(source.cdn
+            .replace('{repo}', source.repo)
+            .replace('{branch}', source.branch)
+            .replace('{path}', file.remote));
+    }
+    for (const repo of source.mirrors || []) {
+        urls.push(`https://raw.githubusercontent.com/${repo}/${source.branch}/${file.remote}`);
+    }
+    return urls;
+}
+
+/**
+ * 尝试按候选 URL 依次拉取一个 source 的全部文件。
+ * 所有文件必须全部成功才算可用(避免快照出现半新半旧的组合)。
  * @returns {{ok: boolean, repoUsed?: string, files?: Object<string,string>, error?: Error}}
  */
 async function fetchSource(source) {
-    const candidates = [source.repo, ...(source.mirrors || [])];
-    let lastError = null;
-    for (const repo of candidates) {
-        try {
-            const files = {};
-            for (const f of source.files) {
-                files[f.local] = await fetchText(
-                    `https://raw.githubusercontent.com/${repo}/${source.branch}/${f.remote}`
-                );
+    const files = {};
+    let urlUsed = null;
+    for (const f of source.files) {
+        let text = null;
+        let lastError = null;
+        for (const url of candidateUrls(source, f)) {
+            try {
+                text = await fetchText(url);
+                urlUsed = url;
+                break;
+            } catch (e) {
+                lastError = e;
+                console.warn(`[upstream] 候选地址不可用: ${url} (${e.message})`);
             }
-            return { ok: true, repoUsed: repo, files };
-        } catch (e) {
-            lastError = e;
-            console.warn(`[upstream] 候选仓库不可用: ${repo} (${e.message})`);
         }
+        if (text === null) {
+            return { ok: false, error: lastError };
+        }
+        files[f.local] = text;
     }
-    return { ok: false, error: lastError };
+    const repoUsed = urlUsed && urlUsed.includes('jsdelivr')
+        ? `${source.repo}(cdn)`
+        : source.repo;
+    return { ok: true, repoUsed, files };
 }
 
 async function main() {
@@ -249,4 +279,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     });
 }
 
-export { extractDictVersion, sha256, parseStateText, UnexpectedError };
+export { extractDictVersion, sha256, parseStateText, UnexpectedError, candidateUrls };

@@ -15,6 +15,7 @@ import {
     sha256,
     parseStateText,
     UnexpectedError,
+    candidateUrls,
 } from '../scripts/check-upstream.mjs';
 
 describe('extractDictVersion(词库版本提取)', () => {
@@ -75,6 +76,30 @@ describe('parseStateText(状态文件校验——防 buildNumber 倒退)', () =>
     test('顶层非对象(null/数组)被拒绝', () => {
         assert.strictEqual(parseStateText('null').ok, false);
         assert.strictEqual(parseStateText('[1,2]').ok, false);
+    });
+});
+
+describe('candidateUrls(上游容灾候选地址顺序)', () => {
+    const source = {
+        repo: 'izhadu/GreasyFork',
+        branch: 'main',
+        cdn: 'https://cdn.jsdelivr.net/gh/{repo}@{branch}/{path}',
+        mirrors: ['someone/fork'],
+        files: [{ local: 'sources/hf-dict.json', remote: 'HuggingFace-Chinese/dict.json' }],
+    };
+    const file = source.files[0];
+
+    test('顺序:主仓库 raw → cdn 模板 → 镜像仓库 raw', () => {
+        assert.deepStrictEqual(candidateUrls(source, file), [
+            'https://raw.githubusercontent.com/izhadu/GreasyFork/main/HuggingFace-Chinese/dict.json',
+            'https://cdn.jsdelivr.net/gh/izhadu/GreasyFork@main/HuggingFace-Chinese/dict.json',
+            'https://raw.githubusercontent.com/someone/fork/main/HuggingFace-Chinese/dict.json',
+        ]);
+    });
+
+    test('未配置 cdn/mirrors 时只有主仓库一个候选', () => {
+        const minimal = { repo: 'a/b', branch: 'main', files: source.files };
+        assert.strictEqual(candidateUrls(minimal, file).length, 1);
     });
 });
 
