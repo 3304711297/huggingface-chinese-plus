@@ -1,0 +1,24 @@
+{
+  "$comment": "自有补充词库:上游 izhadu dict.json 覆盖不到的词条,build.mjs 合并时优先级高于上游词库。只收录真机页面实测漏翻的词条,勿大批量堆词。",
+  "version": "1.0.0",
+  "translations": {
+    "@comment": "huggingface.co 真机实测漏翻(2026-08-29)",
+    "Apps": "应用",
+    "Add your hardware": "添加你的硬件",
+    "Dismiss": "关闭",
+    "Dismiss this message": "关闭此消息",
+    "Browse available models": "浏览可用模型",
+    "Join an organization": "加入组织",
+    "Hugging Face is way more fun with friends and colleagues! 🤗": "有朋友和同事一起,Hugging Face 更有意思! 🤗",
+    "Inference Providers available": "可用推理服务提供商",
+    "@comment_title": "页面标题(整串匹配)",
+    "Models – Hugging Face": "模型 – Hugging Face",
+    "Datasets – Hugging Face": "数据集 – Hugging Face",
+    "Spaces – Hugging Face": "空间 – Hugging Face",
+    "Hugging Face – The AI community building the future.": "Hugging Face – 构建未来的 AI 社区"
+  },
+  "regexRules": [
+    ["^Run (.+) Models Instantly$", "立即运行 $1 个模型"],
+    ["^\\+(\\d+) others$", "及其他 $1 家"]
+  ]
+}

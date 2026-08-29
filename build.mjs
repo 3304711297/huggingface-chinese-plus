@@ -24,7 +24,7 @@ const read = (name) => readFileSync(join(root, name), 'utf8');
 /* ====== 发布配置 ====== */
 const REPO_OWNER = '3304711297';
 const REPO_NAME = 'huggingface-chinese-plus';
-const OUR_BASE = '1.0'; // 我们自己的功能版本号,有功能性改动时手动递增
+const OUR_BASE = '1.1'; // 我们自己的功能版本号,有功能性改动时手动递增
 
 const state = JSON.parse(readFileSync(join(root, 'upstream.state.json'), 'utf8'));
 const BUILD_NUMBER = state.buildNumber || 1;
@@ -85,6 +85,17 @@ function inlineCore(source) {
 const dict = JSON.parse(read('sources/hf-dict.json'));
 const dictError = validateDict(dict);
 if (dictError) throw new Error(`词库文件不合法: ${dictError}`);
+
+// 合并自有补充词库(sources/hf-supplement.json):
+//   翻译键直接覆盖上游同键词条;正则规则追加到上游规则之后。
+//   补充词库与上游快照分离,check-upstream 只覆盖 hf-dict.json,不会被同步冲掉
+const supplement = JSON.parse(read('sources/hf-supplement.json'));
+const supplementError = validateDict(supplement);
+if (supplementError) throw new Error(`补充词库不合法: ${supplementError}`);
+for (const [en, zh] of Object.entries(supplement.translations)) {
+    dict.translations[en] = zh;
+}
+dict.regexRules.push(...supplement.regexRules);
 
 const core = inlineCore(read('i18n-core.mjs'));
 const engine = read('engine.js').trimEnd();
