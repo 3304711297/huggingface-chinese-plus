@@ -136,57 +136,54 @@ function extractDictVersion(dictText) {
 }
 
 /**
- * 生成单个上游文件的全部候选 URL(按优先级):
- *   1. 主仓库 raw.githubusercontent.com
- *   2. cdn 模板(如 jsDelivr,raw 被墙/被限时容灾;有缓存,可能滞后)
- *   3. 各镜像仓库 raw 地址
+ * 候选源列表(按优先级):主仓库 raw → cdn 模板(jsDelivr,raw 被墙/被限时容灾,
+ * 有缓存可能滞后)→ 各镜像仓库 raw。
+ * 每个 candidate 是一个"整组源":同一 source 的全部文件必须来自同一个候选源,
+ * 不允许逐文件各自回退——否则多文件上游会出现"半 raw 半 CDN"的混合快照。
+ * @returns {Array<{label: string, url: (remote: string) => string}>}
  */
-function candidateUrls(source, file) {
-    const urls = [
-        `https://raw.githubusercontent.com/${source.repo}/${source.branch}/${file.remote}`,
-    ];
+function candidateSources(source) {
+    const rawUrl = (repo, remote) =>
+        `https://raw.githubusercontent.com/${repo}/${source.branch}/${remote}`;
+    const list = [{ label: source.repo, url: (remote) => rawUrl(source.repo, remote) }];
     if (source.cdn) {
-        urls.push(source.cdn
-            .replace('{repo}', source.repo)
-            .replace('{branch}', source.branch)
-            .replace('{path}', file.remote));
+        list.push({
+            label: `${source.repo}(cdn)`,
+            url: (remote) => source.cdn
+                .replace('{repo}', source.repo)
+                .replace('{branch}', source.branch)
+                .replace('{path}', remote),
+        });
     }
     for (const repo of source.mirrors || []) {
-        urls.push(`https://raw.githubusercontent.com/${repo}/${source.branch}/${file.remote}`);
+        list.push({ label: repo, url: (remote) => rawUrl(repo, remote) });
     }
-    return urls;
+    return list;
 }
 
 /**
- * 尝试按候选 URL 依次拉取一个 source 的全部文件。
- * 所有文件必须全部成功才算可用(避免快照出现半新半旧的组合)。
+ * 按候选源整组拉取一个 source 的全部文件:
+ * 某个候选源必须把 source.files 全部拉成功才采用,任一文件失败即整组作废、换下一个源。
  * @returns {{ok: boolean, repoUsed?: string, files?: Object<string,string>, error?: Error}}
  */
 async function fetchSource(source) {
-    const files = {};
-    let urlUsed = null;
-    for (const f of source.files) {
-        let text = null;
-        let lastError = null;
-        for (const url of candidateUrls(source, f)) {
+    let lastError = null;
+    for (const candidate of candidateSources(source)) {
+        const files = {};
+        let complete = true;
+        for (const f of source.files) {
             try {
-                text = await fetchText(url);
-                urlUsed = url;
-                break;
+                files[f.local] = await fetchText(candidate.url(f.remote));
             } catch (e) {
                 lastError = e;
-                console.warn(`[upstream] 候选地址不可用: ${url} (${e.message})`);
+                complete = false;
+                console.warn(`[upstream] 候选源 "${candidate.label}" 拉取 ${f.remote} 失败: ${e.message}`);
+                break;
             }
         }
-        if (text === null) {
-            return { ok: false, error: lastError };
-        }
-        files[f.local] = text;
+        if (complete) return { ok: true, repoUsed: candidate.label, files };
     }
-    const repoUsed = urlUsed && urlUsed.includes('jsdelivr')
-        ? `${source.repo}(cdn)`
-        : source.repo;
-    return { ok: true, repoUsed, files };
+    return { ok: false, error: lastError };
 }
 
 async function main() {
@@ -279,4 +276,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     });
 }
 
-export { extractDictVersion, sha256, parseStateText, UnexpectedError, candidateUrls };
+export { extractDictVersion, sha256, parseStateText, UnexpectedError, candidateSources };

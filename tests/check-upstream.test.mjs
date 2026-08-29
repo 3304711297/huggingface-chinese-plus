@@ -15,7 +15,7 @@ import {
     sha256,
     parseStateText,
     UnexpectedError,
-    candidateUrls,
+    candidateSources,
 } from '../scripts/check-upstream.mjs';
 
 describe('extractDictVersion(词库版本提取)', () => {
@@ -79,7 +79,7 @@ describe('parseStateText(状态文件校验——防 buildNumber 倒退)', () =>
     });
 });
 
-describe('candidateUrls(上游容灾候选地址顺序)', () => {
+describe('candidateSources(上游容灾候选源顺序与整组语义)', () => {
     const source = {
         repo: 'izhadu/GreasyFork',
         branch: 'main',
@@ -87,19 +87,29 @@ describe('candidateUrls(上游容灾候选地址顺序)', () => {
         mirrors: ['someone/fork'],
         files: [{ local: 'sources/hf-dict.json', remote: 'HuggingFace-Chinese/dict.json' }],
     };
-    const file = source.files[0];
 
-    test('顺序:主仓库 raw → cdn 模板 → 镜像仓库 raw', () => {
-        assert.deepStrictEqual(candidateUrls(source, file), [
-            'https://raw.githubusercontent.com/izhadu/GreasyFork/main/HuggingFace-Chinese/dict.json',
-            'https://cdn.jsdelivr.net/gh/izhadu/GreasyFork@main/HuggingFace-Chinese/dict.json',
-            'https://raw.githubusercontent.com/someone/fork/main/HuggingFace-Chinese/dict.json',
-        ]);
+    test('顺序:主仓库 raw → cdn 模板 → 镜像仓库 raw,占位符正确展开', () => {
+        const [primary, cdn, mirror] = candidateSources(source);
+        assert.strictEqual(primary.label, 'izhadu/GreasyFork');
+        assert.strictEqual(
+            primary.url('HuggingFace-Chinese/dict.json'),
+            'https://raw.githubusercontent.com/izhadu/GreasyFork/main/HuggingFace-Chinese/dict.json'
+        );
+        assert.strictEqual(cdn.label, 'izhadu/GreasyFork(cdn)');
+        assert.strictEqual(
+            cdn.url('HuggingFace-Chinese/dict.json'),
+            'https://cdn.jsdelivr.net/gh/izhadu/GreasyFork@main/HuggingFace-Chinese/dict.json'
+        );
+        assert.strictEqual(mirror.label, 'someone/fork');
+        assert.strictEqual(
+            mirror.url('HuggingFace-Chinese/dict.json'),
+            'https://raw.githubusercontent.com/someone/fork/main/HuggingFace-Chinese/dict.json'
+        );
     });
 
-    test('未配置 cdn/mirrors 时只有主仓库一个候选', () => {
-        const minimal = { repo: 'a/b', branch: 'main', files: source.files };
-        assert.strictEqual(candidateUrls(minimal, file).length, 1);
+    test('未配置 cdn/mirrors 时只有主仓库一个候选源', () => {
+        const minimal = { repo: 'a/b', branch: 'main' };
+        assert.strictEqual(candidateSources(minimal).length, 1);
     });
 });
 
