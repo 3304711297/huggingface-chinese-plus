@@ -8,9 +8,16 @@
 ## 安装
 
 1. 浏览器安装用户脚本管理器([ScriptCat 脚本猫](https://scriptcat.org/) / Tampermonkey / Violentmonkey 均可)
-2. 点击安装:[huggingface-chinese-plus.user.js](https://raw.githubusercontent.com/3304711297/huggingface-chinese-plus/main/huggingface-chinese-plus.user.js)
+2. 点击安装,直连 / 镜像双入口任选其一:
 
-脚本管理器会通过 `@updateURL` 自动检查更新。
+   - 直连:[huggingface-chinese-plus.user.js](https://raw.githubusercontent.com/3304711297/huggingface-chinese-plus/main/huggingface-chinese-plus.user.js)
+   - 镜像(国内建议用镜像):[huggingface-chinese-plus.user.js](https://cdn.jsdelivr.net/gh/3304711297/huggingface-chinese-plus@main/huggingface-chinese-plus.user.js)
+
+> - 分支文件在 jsDelivr 有约 12 小时 CDN 缓存,新版本可能延迟生效;急着更新可走直连
+> - 使用脚本猫的用户同样支持上述直连/镜像两种安装方式,更新检测逻辑一致
+> - 脚本管理器会通过 `@updateURL`(指向 raw 直连地址)自动检查更新
+
+更新检测说明:`@version` 递增是脚本管理器判断"是否为更新版本"的核心版本依据,实际更新检测还涉及 `@updateURL`、安装源与管理器策略。
 
 ## 特性
 
@@ -19,11 +26,16 @@
 - **安全区豁免**:代码块、Monaco/CodeMirror 编辑器、模型卡正文、Markdown 文档绝不翻译,不污染你要复制的内容
 - **属性翻译**:placeholder、title、aria-label 一并处理,按钮悬停提示也是中文
 - **正则翻译开关**:脚本管理器菜单一键开关动态文本翻译
+- **开发者模式**:菜单一键开关"收集未命中词条",词条唯一化、上限 500 条;菜单一键导出固定格式 JSON(`{"domain": ..., "generatedAt": ..., "items": [...]}`,`domain` 动态取当前页面 hostname,官方站为 `huggingface.co`、镜像站为 `hf-mirror.com`),复制到剪贴板/控制台后可直接贴 Issue,用于给补充词库攒词
 - **上游词库自动跟进**:GitHub Actions 每 6 小时检测词库上游更新,有更新自动重组并发新版本;raw 不可达时自动走 jsDelivr CDN 兜底;上游快照完整保存在本仓库,上游消失不影响使用
 
 ## 站点匹配范围
 
 匹配 `huggingface.co`(含子域)与 `hf-mirror.com`。**有意不匹配 `hf.space` / `*.hf.space`**:这些域名是用户自建的 Gradio/Streamlit Space 应用界面,不是 Hugging Face 官方 UI——词库翻译会污染应用本身的交互文本,且这些应用的内容不属于"HF 站点汉化"的范畴。
+
+## 镜像站词条说明
+
+镜像站([hf-mirror.com](https://hf-mirror.com/))的词条**以官方站为准**:两个站点的界面文本一致,漏翻时请优先在官方站核对原文,并在 Issue 中**标注来源域名**(官方站报告的词条直接对镜像站同样生效;若只在镜像站出现漏翻,也请明确标注,便于甄别是站点差异还是词库缺口)。
 
 ## 版本号语义
 

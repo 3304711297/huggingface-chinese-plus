@@ -121,3 +121,65 @@ export function validateDict(dict) {
     if (buildIndex(dict.translations).size === 0) return 'translations 有效词条为 0';
     return null;
 }
+
+/* ==== 开发者模式(纯函数部分,engine.js 与单测共用) ==== */
+
+/** 收集上限:防止极端页面把内存与导出 JSON 撑爆 */
+export const DEV_EXPORT_LIMIT = 500;
+
+/** 规范化收集键:与查找键同规则(去首尾空白、折叠空白) */
+export function devNormalizeKey(text) {
+    return typeof text === 'string' ? text.trim().replace(/\s+/g, ' ') : '';
+}
+
+/**
+ * 未命中词条收集器:唯一化(同键只记一次)、上限 DEV_EXPORT_LIMIT、会话内有效。
+ * 返回纯数据容器,无 DOM/GM 依赖。
+ */
+export function createUnmatchedCollector(limit = DEV_EXPORT_LIMIT) {
+    const seen = new Set();
+    const items = [];
+    return {
+        /** @returns {boolean} 是否为新收录(重复/超限/空键为 false) */
+        add(raw) {
+            const key = devNormalizeKey(raw);
+            if (!key || seen.has(key) || items.length >= limit) return false;
+            seen.add(key);
+            items.push(key);
+            return true;
+        },
+        size() {
+            return items.length;
+        },
+        /** @returns {string[]} 已收录词条(唯一数组,原序) */
+        items() {
+            return items.slice();
+        },
+        clear() {
+            seen.clear();
+            items.length = 0;
+        },
+    };
+}
+
+/**
+ * 生成开发者模式导出 JSON(固定格式,可直接贴 Issue):
+ *   { "domain": "<当前页面 hostname>", "generatedAt": "<ISO时间>", "items": ["..."] }
+ * items 唯一化并截断到上限;domain 由调用方传入 location.hostname。
+ */
+export function buildDevExport(collected, domain, now = new Date()) {
+    const seen = new Set();
+    const items = [];
+    for (const raw of collected || []) {
+        const key = devNormalizeKey(raw);
+        if (!key || seen.has(key)) continue;
+        seen.add(key);
+        items.push(key);
+        if (items.length >= DEV_EXPORT_LIMIT) break;
+    }
+    return JSON.stringify({
+        domain: String(domain ?? ''),
+        generatedAt: now.toISOString(),
+        items,
+    });
+}

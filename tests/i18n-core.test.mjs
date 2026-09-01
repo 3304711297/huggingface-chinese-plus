@@ -17,6 +17,9 @@ import {
     lookupRegex,
     translateText,
     validateDict,
+    DEV_EXPORT_LIMIT,
+    createUnmatchedCollector,
+    buildDevExport,
 } from '../i18n-core.mjs';
 
 describe('normalizeKey', () => {
@@ -143,5 +146,52 @@ describe('validateDict(词库整体合法性——防上游格式变更悄悄产
             validateDict({ version: '1', translations: { '@c': 'x' }, regexRules: [] }),
             /有效词条为 0/
         );
+    });
+});
+
+describe('开发者模式纯函数(去重/上限/固定导出格式)', () => {
+    test('收集器去重、计数与清空', () => {
+        const c = createUnmatchedCollector();
+        assert.strictEqual(c.add('  Deploy   this model '), true); // 键规范化后收录
+        assert.strictEqual(c.add('Deploy this model'), false); // 同键(规范化后)不重复收录
+        assert.strictEqual(c.size(), 1);
+        c.clear();
+        assert.strictEqual(c.size(), 0);
+    });
+
+    test('收集器到达上限后不再收录', () => {
+        const c = createUnmatchedCollector(3);
+        for (const k of ['a', 'b', 'c', 'd']) c.add(k);
+        assert.strictEqual(c.size(), 3);
+        assert.deepStrictEqual(c.items(), ['a', 'b', 'c']);
+    });
+
+    test('导出 JSON 固定格式:domain / generatedAt / items,键序固定', () => {
+        const json = buildDevExport(
+            ['Deploy', 'Deploy', ' Upload dataset '],
+            'huggingface.co',
+            new Date('2026-09-01T00:00:00.000Z')
+        );
+        const parsed = JSON.parse(json);
+        assert.deepStrictEqual(Object.keys(parsed), ['domain', 'generatedAt', 'items']);
+        assert.strictEqual(parsed.domain, 'huggingface.co');
+        assert.strictEqual(parsed.generatedAt, '2026-09-01T00:00:00.000Z');
+        assert.deepStrictEqual(parsed.items, ['Deploy', 'Upload dataset']); // 去重 + 规范化
+        // 整体是可直接贴 Issue 的单行 JSON
+        assert.ok(!json.includes('\n'));
+    });
+
+    test('导出条数截断到上限,镜像站 domain 透传', () => {
+        const many = Array.from({ length: DEV_EXPORT_LIMIT + 10 }, (_, i) => 'w' + i);
+        const parsed = JSON.parse(buildDevExport(many, 'hf-mirror.com', new Date()));
+        assert.strictEqual(parsed.items.length, DEV_EXPORT_LIMIT);
+        assert.strictEqual(parsed.domain, 'hf-mirror.com');
+    });
+
+    test('空收集/非字符串输入防御', () => {
+        const parsed = JSON.parse(buildDevExport([], 'huggingface.co', new Date()));
+        assert.deepStrictEqual(parsed.items, []);
+        assert.strictEqual(createUnmatchedCollector().add(null), false);
+        assert.strictEqual(createUnmatchedCollector().add('   '), false);
     });
 });

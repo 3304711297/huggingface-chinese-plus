@@ -25,6 +25,39 @@ function loadRegexToggle() {
 }
 let enableRegex = loadRegexToggle();
 
+/* ---- 开发者模式(菜单开关:收集未命中词条,攒补充词库用;导出固定格式 JSON) ---- */
+function loadDevToggle() {
+    try {
+        if (typeof GM_getValue === 'function') return GM_getValue('dev_mode', false);
+    } catch { /* 无存储环境时按默认关闭 */ }
+    return false;
+}
+let devMode = loadDevToggle();
+const devCollector = createUnmatchedCollector();
+
+function collectUnmatched(raw) {
+    if (!devMode) return;
+    if (devCollector.add(raw)) {
+        console.debug('[HF中文] 未命中收录(' + devCollector.size() + '/' + DEV_EXPORT_LIMIT + '): "' +
+            devNormalizeKey(raw) + '"');
+    }
+}
+
+function exportDevJson() {
+    // domain 运行时动态取当前页面 hostname:官方站导出 huggingface.co,镜像站导出 hf-mirror.com
+    const json = buildDevExport(devCollector.items(), location.hostname);
+    console.log('[HF中文] 未命中词条导出(' + JSON.parse(json).items.length + ' 条,可直接贴 Issue):');
+    console.log(json);
+    try {
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+            navigator.clipboard.writeText(json).then(
+                () => console.info('[HF中文] 已复制到剪贴板'),
+                () => console.info('[HF中文] 剪贴板不可用(页面未聚焦?),请从上方控制台输出复制')
+            );
+        }
+    } catch { /* 剪贴板失败不影响控制台输出 */ }
+}
+
 function registerMenu() {
     if (typeof GM_registerMenuCommand !== 'function') return;
     GM_registerMenuCommand(
@@ -37,6 +70,21 @@ function registerMenu() {
             } catch { /* 忽略存储失败,本次会话仍然生效 */ }
             location.reload();
         }
+    );
+    GM_registerMenuCommand(
+        (devMode ? '🔴 关闭' : '🟢 开启') + '开发者模式(收集未命中词条,攒补充词库用,当前已收 ' +
+        devCollector.size() + ' 条)',
+        () => {
+            devMode = !devMode;
+            try {
+                if (typeof GM_setValue === 'function') GM_setValue('dev_mode', devMode);
+            } catch { /* 忽略存储失败 */ }
+            location.reload();
+        }
+    );
+    GM_registerMenuCommand(
+        '📤 导出未命中词条 JSON(domain=' + location.hostname + ')',
+        exportDevJson
     );
 }
 
@@ -73,7 +121,7 @@ function applyTranslation(textNode) {
     const trimmed = text.trim();
     if (!trimmed || trimmed.length > MAX_TEXT_LENGTH || !HAS_LETTER.test(trimmed)) return;
     const zh = translateText(DICT_INDEX, REGEX_RULES, text, enableRegex);
-    if (zh === null) return;
+    if (zh === null) { collectUnmatched(trimmed); return; }
     // 只替换首个命中段,保留节点原文的前导/尾随空白,避免破坏布局
     textNode.nodeValue = text.replace(trimmed, zh);
 }
@@ -106,7 +154,8 @@ function collectAttributes(root) {
             const trimmed = value.trim();
             if (!trimmed || trimmed.length > MAX_TEXT_LENGTH || !HAS_LETTER.test(trimmed)) continue;
             const zh = translateText(DICT_INDEX, REGEX_RULES, value, enableRegex);
-            if (zh !== null) el.setAttribute(attr, value.replace(trimmed, zh));
+            if (zh === null) { collectUnmatched(trimmed); continue; }
+            el.setAttribute(attr, value.replace(trimmed, zh));
         }
     }
 }
