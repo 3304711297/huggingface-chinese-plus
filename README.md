@@ -5,6 +5,14 @@
 
 中文化 [Hugging Face](https://huggingface.co/) 全站界面的油猴用户脚本:导航、筛选器、按钮、模型/数据集页、动态时间("3 days ago")等一网打尽。同时兼容国内镜像 [hf-mirror.com](https://hf-mirror.com/)。
 
+## 真机截图
+
+| HF Home | 模型页 | 数据集页 |
+|---|---|---|
+| ![HF Home](screenshots/home.png) | ![模型页](screenshots/model-page.png) | ![数据集页](screenshots/dataset-page.png) |
+
+以上截图为真机实测（Edge Dev 注入 `huggingface-chinese-plus.user.js` v1.3.1，官方站）：导航、筛选器、按钮与右侧元数据栏全部中文化，模型卡正文/代码块安全区保持原文不翻译。
+
 ## 安装
 
 1. 浏览器安装用户脚本管理器([ScriptCat 脚本猫](https://scriptcat.org/) / Tampermonkey / Violentmonkey 均可)
