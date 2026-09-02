@@ -7,7 +7,7 @@
 <p align="center">
   <a href="https://raw.githubusercontent.com/3304711297/huggingface-chinese-plus/main/huggingface-chinese-plus.user.js"><img src="https://img.shields.io/badge/Install-Userscript-brightgreen?style=flat-square&logo=tampermonkey" alt="Install"></a>
   <a href="https://github.com/3304711297/huggingface-chinese-plus/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/3304711297/huggingface-chinese-plus/ci.yml?branch=main&label=CI%20Build&style=flat-square" alt="CI Status"></a>
-  <a href="https://github.com/3304711297/huggingface-chinese-plus/actions/workflows/sync-upstream.yml"><img src="https://img.shields.io/github/actions/workflow/status/3304711297/huggingface-chinese-plus/sync-upstream.yml?branch=main&label=Sync%20Upstream%20(6h)&style=flat-square" alt="Sync Upstream"></a>
+  <a href="https://github.com/3304711297/huggingface-chinese-plus/actions/workflows/upstream-sync.yml"><img src="https://img.shields.io/github/actions/workflow/status/3304711297/huggingface-chinese-plus/upstream-sync.yml?branch=main&label=Sync%20Upstream%20(6h)&style=flat-square" alt="Sync Upstream"></a>
   <img src="https://img.shields.io/badge/Supports-huggingface.co%20%7C%20hf--mirror.com-yellow?style=flat-square&logo=huggingface" alt="Targets">
   <a href="https://www.gnu.org/licenses/gpl-3.0"><img src="https://img.shields.io/badge/License-GPL--3.0-blue.svg?style=flat-square" alt="License"></a>
 </p>
@@ -59,8 +59,8 @@
 ## 🛠️ 本地开发与测试
 
 ```bash
-# 1. 运行核心算法与上游检查单测
-node --test tests/i18n-core.test.mjs tests/check-upstream.test.mjs
+# 1. 运行全量单测套件 (核心引擎 + 130+ 正则规则 + 上游同步状态)
+node --test tests/i18n-core.test.mjs tests/regex-rules.test.mjs tests/check-upstream.test.mjs
 
 # 2. 手动执行上游词库同步检测
 node scripts/check-upstream.mjs
