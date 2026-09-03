@@ -340,6 +340,7 @@
     "Inference Usage": "推理资源用量",
     "Subscribe to PRO": "订阅 PRO",
     "Access Tokens": "访问令牌 (Access Tokens)",
+    "API Keys": "API 密钥",
     "Billing": "财务账单",
     "Changelog": "更新日志",
     "AI & ML interests": "AI/ML 兴趣方向",
@@ -443,7 +444,6 @@
     "Get started": "立即体验",
     "Create new": "新建",
     "Overview": "概览",
-    "API Keys": "API 密钥",
     "Usage": "资源用量",
     "Members": "团队成员",
     "Support": "技术支持",
@@ -717,12 +717,12 @@
     "@comment_ref_13": "================ 组织中 ================",
     "More than 50,000 organizations are using Hugging Face": "超过 50,000 个组织正在使用 Hugging Face",
     "@comment_ref_14": "================ 页脚 ================",
-    "Dark theme": "深色模式",
     "TOS": "服务条款",
     "Company": "公司",
     "Social": "社交媒体",
     "Keep track of latest changes on the Hugging Face Hub": "跟踪 Hugging Face Hub 的最新变更",
     "Brand assets": "品牌资源",
+    "Terms of service": "服务条款",
     "Press": "新闻媒体",
     "Service Status": "服务状态",
     "Speed test": "速度测试",
@@ -2025,6 +2025,34 @@
       "i"
     ],
     [
+      "\\b(\\d+(?:,\\d+)*) spaces?\\b",
+      "$1 个空间",
+      "i"
+    ],
+    [
+      "\\b(\\d+(?:,\\d+)*) contributors?\\b",
+      "$1 位贡献者",
+      "i"
+    ],
+    [
+      "^Cite arxiv\\.org/abs/([\\d.]+) in a Space README\\.md to link it from this page\\.$",
+      "在空间 README.md 中引用 arXiv:$1 即可从本页链接"
+    ],
+    [
+      "^Access to (?:model|dataset) .+ is restricted and you are not in the authorized list\\. Visit$",
+      "该仓库访问受限，你不在授权名单中，请访问 "
+    ],
+    [
+      "\\bupdated\\b",
+      "更新于",
+      "i"
+    ],
+    [
+      "\\babout\\b",
+      "大约",
+      "i"
+    ],
+    [
       "\\b(\\d+(?:,\\d+)*) models?\\b",
       "$1 个模型",
       "i"
@@ -2032,11 +2060,6 @@
     [
       "\\b(\\d+(?:,\\d+)*) datasets?\\b",
       "$1 个数据集",
-      "i"
-    ],
-    [
-      "\\b(\\d+(?:,\\d+)*) spaces?\\b",
-      "$1 个空间",
       "i"
     ],
     [
@@ -2057,11 +2080,6 @@
     [
       "\\b(\\d+(?:,\\d+)*) applications?\\b",
       "$1 个应用",
-      "i"
-    ],
-    [
-      "\\b(\\d+(?:,\\d+)*) contributors?\\b",
-      "$1 位贡献者",
       "i"
     ],
     [
@@ -2127,10 +2145,6 @@
     [
       "^Browse (\\d+) collections? that include this paper$",
       "浏览 $1 个包含此论文的收藏集"
-    ],
-    [
-      "^Cite arxiv\\.org/abs/([\\d.]+) in a Space README\\.md to link it from this page\\.$",
-      "在空间 README.md 中引用 arXiv:$1 即可从本页链接"
     ],
     [
       "^Published on Jan (\\d{1,2})$",
@@ -2377,22 +2391,8 @@
       "你总共拥有 $1 TFLOPS 的计算能力"
     ],
     [
-      "^Access to (?:model|dataset) .+ is restricted and you are not in the authorized list\\. Visit$",
-      "该仓库访问受限，你不在授权名单中，请访问 "
-    ],
-    [
       "^The task_categories \"(.+?)\" is not in the official list: (.+)$",
       "任务类别 \"$1\" 不在官方列表中：$2"
-    ],
-    [
-      "\\bupdated\\b",
-      "更新于",
-      "i"
-    ],
-    [
-      "\\babout\\b",
-      "大约",
-      "i"
     ]
   ]
 }

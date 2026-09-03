@@ -1,13 +1,13 @@
 {
-  "buildNumber": 1,
+  "buildNumber": 2,
   "sources": {
     "izhadu": {
-      "status": "unchanged",
+      "status": "updated",
       "repoUsed": "izhadu/GreasyFork",
-      "checkedAt": "2026-08-29T00:00:00.000Z",
-      "lastChangedAt": "2026-08-29T00:00:00.000Z",
+      "checkedAt": "2026-09-03T10:38:22.607Z",
+      "lastChangedAt": "2026-09-03T10:38:22.607Z",
       "hashes": {
-        "sources/hf-dict.json": "5942df81eb0e7f47ed14f59b8c0fe6012233d36624c3a9a43ec7e0251dcc9ec8"
+        "sources/hf-dict.json": "3a17d60860fec5ae4f644cb56c9528a3fa7ddd86d674836d2dbfcf65ef607f26"
       },
       "versions": {
         "dict": "2026.08.20 12:00:00"
