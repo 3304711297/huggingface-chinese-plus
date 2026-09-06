@@ -60,6 +60,7 @@ jobs:
         run: |
           node build.mjs
           node --check huggingface-chinese-plus.user.js
+          node --test tests/i18n-core.test.mjs tests/regex-rules.test.mjs tests/check-upstream.test.mjs tests/build.test.mjs
 
       - name: 提交并推送
         if: steps.diff.outputs.changed == 'true'
