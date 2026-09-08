@@ -6,6 +6,7 @@
 
 <p align="center">
   <a href="https://raw.githubusercontent.com/3304711297/huggingface-chinese-plus/main/huggingface-chinese-plus.user.js"><img src="https://img.shields.io/badge/Install-Userscript-brightgreen?style=flat-square&logo=tampermonkey" alt="Install"></a>
+  <a href="https://github.com/3304711297/huggingface-chinese-plus/releases"><img src="https://img.shields.io/badge/Release-Stable%20Track-blue?style=flat-square&logo=github" alt="Release Track"></a>
   <a href="https://github.com/3304711297/huggingface-chinese-plus/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/3304711297/huggingface-chinese-plus/ci.yml?branch=main&label=CI%20Build&style=flat-square" alt="CI Status"></a>
   <a href="https://github.com/3304711297/huggingface-chinese-plus/actions/workflows/upstream-sync.yml"><img src="https://img.shields.io/github/actions/workflow/status/3304711297/huggingface-chinese-plus/upstream-sync.yml?branch=main&label=Sync%20Upstream%20(6h)&style=flat-square" alt="Sync Upstream"></a>
   <img src="https://img.shields.io/badge/Supports-huggingface.co%20%7C%20hf--mirror.com-yellow?style=flat-square&logo=huggingface" alt="Targets">
@@ -29,12 +30,20 @@
 ## 🚀 一键安装
 
 1. 浏览器需已安装用户脚本管理器（[ScriptCat 脚本猫](https://scriptcat.org/) / Tampermonkey / Violentmonkey 均可）；
-2. 点击下方链接直接安装：
+2. 根据稳定性需求选择对应通道安装：
 
-| 安装通道 | 链接 | 说明 |
-| :--- | :--- | :--- |
-| ⚡ **GitHub 直连通道** | [一键安装 huggingface-chinese-plus.user.js](https://raw.githubusercontent.com/3304711297/huggingface-chinese-plus/main/huggingface-chinese-plus.user.js) | **推荐**。版本发布即刻生效 |
-| 🌐 **jsDelivr 镜像通道** | [一键安装 (jsDelivr CDN 镜像)](https://cdn.jsdelivr.net/gh/3304711297/huggingface-chinese-plus@main/huggingface-chinese-plus.user.js) | 国内加速镜像（约有 12 小时 CDN 缓存） |
+### 📦 安装通道矩阵
+
+| 通道类型 | 安装通道 | 链接 | 说明 |
+| :--- | :--- | :--- | :--- |
+| ⚡ **滚动通道 (Rolling)** | GitHub 直连 | [一键安装 (main 滚动分支)](https://raw.githubusercontent.com/3304711297/huggingface-chinese-plus/main/huggingface-chinese-plus.user.js) | **默认推荐**。跟随 main 分支，上游词库同步与代码更新即刻生效 |
+| ⚡ **滚动通道 (Rolling)** | jsDelivr CDN 镜像 | [一键安装 (jsDelivr 加速镜像)](https://cdn.jsdelivr.net/gh/3304711297/huggingface-chinese-plus@main/huggingface-chinese-plus.user.js) | 国内加速镜像（约有 12 小时 CDN 缓存延迟） |
+| 🛡️ **稳定通道 (Stable)** | GitHub Releases 永久直链 | [一键安装 (最新稳定 Release 资产)](https://github.com/3304711297/huggingface-chinese-plus/releases/latest/download/huggingface-chinese-plus.user.js) | 指向 GitHub Releases 永久最新资产直链，充分验证，稳定性优先 |
+| 🛡️ **稳定通道 (Stable)** | GitHub Releases 归档 | [浏览 Releases 版本归档页面](https://github.com/3304711297/huggingface-chinese-plus/releases) | 查看各版本发布说明与历史稳定版本归档 |
+
+> **通道选择指南**：
+> - **滚动通道 (Rolling Track)**：默认跟随 `main` 分支。定时任务每 6 小时自动同步上游词库，有更新则即刻打包发布至 `main`。适合希望第一时间获得最新词库覆盖与体验新特性的用户。
+> - **稳定通道 (Stable Track)**：基于 GitHub Releases 正式发布。不会随日常定时词库同步或试验性改动频繁变更，仅在关键里程碑经过多环境严格验证后发布，适合追求极致稳定、不希望脚本频繁静默变动的生产/研发环境。
 
 ---
 
@@ -59,8 +68,8 @@
 ## 🛠️ 本地开发与测试
 
 ```bash
-# 1. 运行全量单测套件 (核心引擎 + 130+ 正则规则 + 上游同步状态)
-node --test tests/i18n-core.test.mjs tests/regex-rules.test.mjs tests/check-upstream.test.mjs
+# 1. 运行全量单测套件 (核心引擎 + 130+ 正则规则 + 上游同步状态 + 构建防倒退校验)
+node --test tests/i18n-core.test.mjs tests/regex-rules.test.mjs tests/check-upstream.test.mjs tests/build.test.mjs
 
 # 2. 手动执行上游词库同步检测
 node scripts/check-upstream.mjs
@@ -70,10 +79,27 @@ node build.mjs
 node --check huggingface-chinese-plus.user.js
 ```
 
-### 版本号规范
-采用 `<功能主版本>.<同步构建号>`（例如 `v1.3.1`）：
-- **前两位变化**：核心引擎重构、算法优化或兼容性修复；
-- **末位变化**：上游词库自动定时同步触发的增量构建。
+### 🏷️ 版本号与发布规范
+
+脚本版本号与发布体系采用 **双轨并行** 机制：
+
+#### 1. 产物版本号语义：`ourBase.buildNumber`
+单文件脚本元数据中的 `@version` 格式严格遵循 `<ourBase>.<buildNumber>`（例如 `1.3.3`）：
+- **`ourBase`（自主功能版本号，如 `1.3`）**：
+  - 记录于 `build.mjs` 中的 `OUR_BASE` 常量，是维护者人工维护的唯一权威版本基线；
+  - 仅在核心引擎重构、算法优化、新特性（如开发者攒词模式）或兼容性修复等人工改动时手动递增。
+- **`buildNumber`（上游同步构建号，如 `3`）**：
+  - 记录于 `upstream.state.json` 中的 `buildNumber` 字段；
+  - 由 GitHub Actions 定时工作流（每 6 小时）执行 `scripts/check-upstream.mjs` 自动维护。仅在上游词库发生**实质性内容更新**时自动递增（`+1`）并触发构建与推送；
+  - 该机制确保油猴脚本管理器能够精确识别词库更新并自动拉取，杜绝无实质变更的空构建污染版本历史。
+
+#### 2. 双发布通道与稳定基线对齐
+- **滚动通道 (Rolling Track)**：
+  - 默认以 `main` 分支为主干，自动集成日常代码提交与每 6 小时词库同步产物，版本号跟随 `buildNumber` 动态递增。
+- **稳定通道 (Stable Track)**：
+  - 严格采用 Git Tag（语义化标签）与 GitHub Releases 正式发布；
+  - **当前仓库尚未创建 Git Tag，首个正式稳定版本基线从 `v1.2.0` 起步（下一个正式稳定基线明确对齐为 `v1.2.0`）**；
+  - 正式发布后，稳定通道资产（`huggingface-chinese-plus.user.js`）永久固化于 Releases 归档，并通过 `releases/latest/download` 直链对外提供高可用安装。
 
 ---
 
