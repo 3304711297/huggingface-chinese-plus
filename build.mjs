@@ -46,6 +46,21 @@ function validateBuildNumber(state) {
     return { ok: true, buildNumber: state.buildNumber };
 }
 
+/**
+ * 根据命令行参数解析下载与更新地址(纯函数,供单元测试)。
+ * - stable 模式(包含 --channel=stable):指向 GitHub Releases 最新稳定产物直链
+ * - 默认 rolling 模式:指向 GitHub main 分支 raw 直链
+ * @param {string[]} [args=process.argv]
+ * @returns {string}
+ */
+function resolveDownloadUrl(args = process.argv) {
+    const isStable = args.includes('--channel=stable') ||
+        (args.indexOf('--channel') !== -1 && args[args.indexOf('--channel') + 1] === 'stable');
+    return isStable
+        ? `https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/latest/download/huggingface-chinese-plus.user.js`
+        : `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/huggingface-chinese-plus.user.js`;
+}
+
 /** 内联 i18n-core:去掉 export 关键字(浏览器端不需要模块导出) */
 function inlineCore(source) {
     const stripped = source.replace(/^export\s+/gm, '');
@@ -67,7 +82,7 @@ function main() {
     const VERSION = `${OUR_BASE}.${BUILD_NUMBER}`;
     const UPSTREAM_DICT_VERSION =
         (state.sources && state.sources.izhadu && state.sources.izhadu.versions?.dict) || '未知';
-    const RAW_URL = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/main/huggingface-chinese-plus.user.js`;
+    const RAW_URL = resolveDownloadUrl(process.argv);
 
     const HEADER = `// ==UserScript==
 // @name         Hugging Face 中文化增强版
@@ -142,7 +157,8 @@ function main() {
 
     const outPath = join(root, 'huggingface-chinese-plus.user.js');
     writeFileSync(outPath, output, 'utf8');
-    console.log(`已生成: ${outPath} (${output.length} 字节,版本 ${VERSION},上游词库 v${UPSTREAM_DICT_VERSION})`);
+    const channel = RAW_URL.includes('/releases/latest/download/') ? 'stable' : 'rolling';
+    console.log(`已生成: ${outPath} (${output.length} 字节,版本 ${VERSION},通道 ${channel},上游词库 v${UPSTREAM_DICT_VERSION})`);
 }
 
 /**
@@ -153,4 +169,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     main();
 }
 
-export { validateBuildNumber };
+export { validateBuildNumber, resolveDownloadUrl };

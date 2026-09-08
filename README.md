@@ -98,7 +98,7 @@ node --check huggingface-chinese-plus.user.js
   - 默认以 `main` 分支为主干，自动集成日常代码提交与每 6 小时词库同步产物，版本号跟随 `buildNumber` 动态递增。
 - **稳定通道 (Stable Track)**：
   - 严格采用 Git Tag（语义化标签）与 GitHub Releases 正式发布；
-  - **当前仓库尚未创建 Git Tag，首个正式稳定版本基线从 `v1.2.0` 起步（下一个正式稳定基线明确对齐为 `v1.2.0`）**；
+  - **首个正式稳定版本基线从 `v1.3.3` 起步（明确对齐当前产物真实版本基线）**；
   - 正式发布后，稳定通道资产（`huggingface-chinese-plus.user.js`）永久固化于 Releases 归档，并通过 `releases/latest/download` 直链对外提供高可用安装。
 
 ---

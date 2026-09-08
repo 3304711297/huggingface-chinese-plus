@@ -11,7 +11,7 @@
  */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { validateBuildNumber } from '../build.mjs';
+import { validateBuildNumber, resolveDownloadUrl } from '../build.mjs';
 
 describe('validateBuildNumber(build 状态校验——防版本倒退)', () => {
     test('合法 buildNumber 通过并原样返回', () => {
@@ -43,5 +43,31 @@ describe('validateBuildNumber(build 状态校验——防版本倒退)', () => {
     test('顶层非对象(null/数组)被拒绝', () => {
         assert.strictEqual(validateBuildNumber(null).ok, false);
         assert.strictEqual(validateBuildNumber([1]).ok, false);
+    });
+});
+
+describe('resolveDownloadUrl(构建通道 URL 解析)', () => {
+    test('默认参数返回 rolling 通道 raw URL', () => {
+        const url = resolveDownloadUrl([]);
+        assert.strictEqual(
+            url,
+            'https://raw.githubusercontent.com/3304711297/huggingface-chinese-plus/main/huggingface-chinese-plus.user.js'
+        );
+    });
+
+    test('--channel=stable 返回 GitHub Releases 稳定通道最新下载直链', () => {
+        const url = resolveDownloadUrl(['node', 'build.mjs', '--channel=stable']);
+        assert.strictEqual(
+            url,
+            'https://github.com/3304711297/huggingface-chinese-plus/releases/latest/download/huggingface-chinese-plus.user.js'
+        );
+    });
+
+    test('--channel stable 分开传参同样正确识别为 stable 通道', () => {
+        const url = resolveDownloadUrl(['node', 'build.mjs', '--channel', 'stable']);
+        assert.strictEqual(
+            url,
+            'https://github.com/3304711297/huggingface-chinese-plus/releases/latest/download/huggingface-chinese-plus.user.js'
+        );
     });
 });
