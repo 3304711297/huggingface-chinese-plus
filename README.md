@@ -65,6 +65,33 @@
 
 ---
 
+## 📂 项目结构
+
+```text
+huggingface-chinese-plus/
+├── build.mjs                        # 构建器：输出单文件产物（内含 OUR_BASE 版本常量）
+├── engine.js                        # 引擎入口
+├── i18n-core.mjs                    # 翻译核心
+├── huggingface-chinese-plus.user.js # 构建产物（自动生成，请勿手改）
+├── sources/
+│   ├── hf-dict.json                 # 上游词库（定时自动同步）
+│   └── hf-supplement.json           # 自有补充词库（永不被上游冲掉，优先级更高）
+├── tests/
+│   ├── i18n-core.test.mjs           # 翻译核心单元测试
+│   ├── regex-rules.test.mjs         # 动态正则规则单元测试
+│   ├── check-upstream.test.mjs      # 上游同步状态单元测试
+│   └── build.test.mjs               # 构建防倒退校验
+├── scripts/
+│   └── check-upstream.mjs           # 上游词库同步检测脚本
+├── screenshots/                     # 实机效果截图
+├── upstream.config.json             # 上游同步配置
+└── upstream.state.json              # 上游同步状态（含 buildNumber 构建号）
+```
+
+> **词库分层说明**：`sources/hf-dict.json` 为上游词库，由定时任务自动同步；`sources/hf-supplement.json` 为自有补充词库，永不被上游冲掉且优先级更高。
+
+---
+
 ## 🛠️ 本地开发与测试
 
 ```bash
@@ -100,6 +127,50 @@ node --check huggingface-chinese-plus.user.js
   - 严格采用 Git Tag（语义化标签）与 GitHub Releases 正式发布；
   - **首个正式稳定版本基线从 `v1.3.3` 起步（明确对齐当前产物真实版本基线）**；
   - 正式发布后，稳定通道资产（`huggingface-chinese-plus.user.js`）永久固化于 Releases 归档，并通过 `releases/latest/download` 直链对外提供高可用安装。
+
+---
+
+## ❓ 常见问题 (FAQ)
+
+<details>
+<summary><strong>👉 安装后没生效怎么办？</strong></summary>
+
+请依次排查：
+
+1. 确认脚本管理器扩展已启用，且脚本自身的开关处于打开状态；
+2. 刷新页面重试（脚本在 `@run-at document-start` 阶段注入，安装脚本前打开的页面必须重新加载）；
+3. 首次在 `hf-mirror.com` 使用脚本时，需在脚本管理器中允许 `*.hf-mirror.com` 的域名匹配。
+</details>
+
+<details>
+<summary><strong>👉 词库多久更新一次？</strong></summary>
+
+GitHub Actions 每 6 小时自动检测一次上游词库，有实质更新即自动构建并发布：滚动通道（main 分支）立即生效；jsDelivr 镜像受约 12 小时 CDN 缓存影响，会有相应延迟。
+</details>
+
+<details>
+<summary><strong>👉 发现漏翻 / 错翻怎么办？</strong></summary>
+
+脚本菜单支持「收集未命中词条」模式：开启后正常浏览页面，脚本会自动去重并格式化收集结果；导出 JSON 后到仓库提交 Issue 即可，词条会随后续同步补充进词库。
+</details>
+
+<details>
+<summary><strong>👉 会不会把代码块也翻译了？</strong></summary>
+
+不会。代码高亮区、复制块、Monaco / CodeMirror 编辑器与 Markdown 结构体均处于严格的安全区保护之下，绝不翻译，保证代码原样复制。
+</details>
+
+<details>
+<summary><strong>👉 支持哪些浏览器与脚本管理器？</strong></summary>
+
+脚本管理器：ScriptCat 脚本猫、Tampermonkey、Violentmonkey 均可；浏览器：Chrome / Edge / Firefox。
+</details>
+
+<details>
+<summary><strong>👉 为什么排除了 <code>*.hf.space</code>？</strong></summary>
+
+`*.hf.space` 上托管的是第三方用户自建的 Gradio / Streamlit Space，属于独立 Web 应用，其界面文本由应用作者自定义；排除该域名是为了避免破坏用户应用的自定义文本。
+</details>
 
 ---
 
