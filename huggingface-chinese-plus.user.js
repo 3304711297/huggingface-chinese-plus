@@ -25,7 +25,7 @@
  *
  * 1. 词库 —— 取自 izhadu/GreasyFork 的 HuggingFace-Chinese/dict.json (GPL-3.0)
  *    https://github.com/izhadu/GreasyFork/tree/main/HuggingFace-Chinese
- *    选择理由:两个主要同类项目中词库最新最全(1800+ 静态词条 + 130+ 正则规则,
+ *    选择理由:两个主要同类项目中词库最新最全(1785 条有效静态词条 + 133 条正则规则,
  *    持续维护),且 GPL-3.0 允许衍生。当前内联词库版本:v2026.09.04 12:00:00
  *
  * 2. 翻译引擎 —— 本文件原创实现,设计思路参考:

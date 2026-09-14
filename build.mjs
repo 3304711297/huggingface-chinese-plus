@@ -9,7 +9,7 @@
  *
  * 版本号规则:`<ourBase>.<buildNumber>`
  *   - ourBase:我们自己的功能版本,人工改动功能后手动递增
- *     (唯一权威来源是下方 OUR_BASE 常量)
+ *     (权威来源是下方 OUR_BASE 常量,人工维护;完整版本号为本常量 + buildNumber)
  *   - buildNumber:upstream.state.json 中的构建号,上游词库每次实际更新时由
  *     scripts/check-upstream.mjs 自动 +1,保证脚本管理器能识别到新版本
  */
@@ -111,7 +111,7 @@ function main() {
  *
  * 1. 词库 —— 取自 izhadu/GreasyFork 的 HuggingFace-Chinese/dict.json (GPL-3.0)
  *    https://github.com/izhadu/GreasyFork/tree/main/HuggingFace-Chinese
- *    选择理由:两个主要同类项目中词库最新最全(1800+ 静态词条 + 130+ 正则规则,
+ *    选择理由:两个主要同类项目中词库最新最全(1785 条有效静态词条 + 133 条正则规则,
  *    持续维护),且 GPL-3.0 允许衍生。当前内联词库版本:v${UPSTREAM_DICT_VERSION}
  *
  * 2. 翻译引擎 —— 本文件原创实现,设计思路参考:

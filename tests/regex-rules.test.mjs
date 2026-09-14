@@ -37,7 +37,7 @@ const fingerprint = (ruleList) =>
         )
         .digest('hex');
 
-// 基线指纹:确认变更意图后,用 node -e 重算并更新此常量(重算命令见 README「开发」)
+// 基线指纹:确认变更意图后重算并更新此常量(重算命令见 README「本地开发与测试 → 正则规则基线指纹」)
 const BASELINE_HASH = '1a1b0e9a785fb3fe022c95b33790b6f694e3b7a9bb09b3de6c8702c73212709c';
 
 describe('正则规则数组稳定指纹(兜底层)', () => {
