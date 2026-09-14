@@ -49,7 +49,7 @@
 
 ## ✨ 核心特性
 
-- **1800+ 静态词条 + 130+ 动态正则**：静态词典秒级查表匹配，动态时效文本（如 `Updated 3 hours ago`、`1.2k downloads`）走高性能正则清洗替换。
+- **1785 条有效静态词条 + 133 条动态正则**：静态词典秒级查表匹配，动态时效文本（如 `Updated 3 hours ago`、`1.2k downloads`）走高性能正则清洗替换（数字口径与重算命令见「本地开发与测试」）。
 - **极致性能与流畅度**：`TreeWalker` 高效 DOM 遍历 + `MutationObserver` 增量收集 + `requestIdleCallback` 空闲批处理调度，保证页面滚动与点击 0 掉帧。
 - **严格的代码安全区保护**：代码高亮区、复制块、Monaco / CodeMirror 编辑器、Markdown 结构体绝不翻译，保证代码原样复制。
 - **全属性中文化**：深度覆盖 `placeholder`、`title`、`aria-label` 等 HTML 属性，鼠标悬停与无障碍提示全汉化。
@@ -69,6 +69,12 @@
 
 ```text
 huggingface-chinese-plus/
+├── .github/                         # GitHub 自动化配置
+│   ├── dependabot.yml               # GitHub Actions 依赖自动更新配置
+│   └── workflows/
+│       ├── ci.yml                   # CI：构建校验 + 产物一致性 + 单元测试
+│       ├── release.yml              # 打 tag 触发：稳定通道构建并发布 Release
+│       └── upstream-sync.yml        # 定时（每 6 小时）检测上游词库更新并重建
 ├── build.mjs                        # 构建器：输出单文件产物（内含 OUR_BASE 版本常量）
 ├── engine.js                        # 引擎入口
 ├── i18n-core.mjs                    # 翻译核心
@@ -84,6 +90,11 @@ huggingface-chinese-plus/
 ├── scripts/
 │   └── check-upstream.mjs           # 上游词库同步检测脚本
 ├── screenshots/                     # 实机效果截图
+│   ├── home.png                     # 首页
+│   ├── model-page.png               # 模型详情页
+│   └── dataset-page.png             # 数据集详情页
+├── README.md                        # 项目说明（本文件）
+├── LICENSE                          # GPL-3.0 开源协议
 ├── upstream.config.json             # 上游同步配置
 └── upstream.state.json              # 上游同步状态（含 buildNumber 构建号）
 ```
@@ -95,7 +106,7 @@ huggingface-chinese-plus/
 ## 🛠️ 本地开发与测试
 
 ```bash
-# 1. 运行全量单测套件 (核心引擎 + 130+ 正则规则 + 上游同步状态 + 构建防倒退校验)
+# 1. 运行全量单测套件 (核心引擎 + 133 条正则规则 + 上游同步状态 + 构建防倒退校验)
 node --test tests/i18n-core.test.mjs tests/regex-rules.test.mjs tests/check-upstream.test.mjs tests/build.test.mjs
 
 # 2. 手动执行上游词库同步检测
@@ -104,6 +115,43 @@ node scripts/check-upstream.mjs
 # 3. 构建并输出单文件产物
 node build.mjs
 node --check huggingface-chinese-plus.user.js
+```
+
+### 🔢 词库规模口径与重算
+
+`1785 条有效静态词条 + 133 条正则规则` 的口径：静态词条取上游 `sources/hf-dict.json` 与
+`sources/hf-supplement.json` 按 `build.mjs` 同序合并后，经 `i18n-core.mjs` 的 `buildIndex()`
+建索引得到的可查条目数（自动排除 `@comment` 开头的分节注释键，以及规范化后重复的键）；
+正则规则为两个词库数组长度之和。上游词库同步后这两个数字会变，改动时请重算：
+
+```bash
+node --input-type=module -e '
+import { readFileSync } from "node:fs";
+import { buildIndex } from "./i18n-core.mjs";
+const load = (p) => JSON.parse(readFileSync(p, "utf8"));
+const up = load("sources/hf-dict.json"), sp = load("sources/hf-supplement.json");
+const translations = { ...up.translations, ...sp.translations };
+console.log("有效静态词条 =", buildIndex(translations).size);
+console.log("正则规则 =", up.regexRules.length + sp.regexRules.length);
+'
+```
+
+### 🧭 正则规则基线指纹
+
+`tests/regex-rules.test.mjs` 对整个规则数组（上游 + 补充，按 `build.mjs` 同序合并）计算
+稳定哈希并对照文件内的 `BASELINE_HASH`，任何新增/删除/修改规则都会使该用例变红。
+确认变更意图后，用以下命令重算并更新 `BASELINE_HASH` 常量：
+
+```bash
+node --input-type=module -e '
+import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+const load = (p) => JSON.parse(readFileSync(p, "utf8")).regexRules;
+const rules = [...load("sources/hf-dict.json"), ...load("sources/hf-supplement.json")];
+const norm = (s) => String(s).replace(/\s+/g, " ").trim();
+const text = `count=${rules.length}\n` + rules.map((r) => `${norm(r[0])} => ${norm(r[1])}`).join("\n");
+console.log(createHash("sha256").update(text).digest("hex"));
+'
 ```
 
 ### 🏷️ 版本号与发布规范
@@ -139,7 +187,7 @@ node --check huggingface-chinese-plus.user.js
 
 1. 确认脚本管理器扩展已启用，且脚本自身的开关处于打开状态；
 2. 刷新页面重试（脚本在 `@run-at document-start` 阶段注入，安装脚本前打开的页面必须重新加载）；
-3. 首次在 `hf-mirror.com` 使用脚本时，需在脚本管理器中允许 `*.hf-mirror.com` 的域名匹配。
+3. 首次在 `hf-mirror.com` 使用脚本时，需在脚本管理器中允许 `hf-mirror.com` 的域名匹配（脚本头部 `@match` 为 `https://hf-mirror.com/*`，不含子域通配；官方站则为 `https://huggingface.co/*` 与 `https://*.huggingface.co/*`）。
 </details>
 
 <details>
