@@ -1,10 +1,10 @@
 {
-  "version": "2026.09.04 12:00:00",
+  "version": "2026.09.22 18:00:00",
   "translations": {
     "@comment_nav": "================ 核心导航与通用 ================",
     "Models": "模型",
     "Datasets": "数据集",
-    "Spaces": "空间",
+    "Spaces": "应用空间",
     "Docs": "文档",
     "Solutions": "解决方案",
     "Pricing": "定价",
@@ -19,7 +19,6 @@
     "Enterprise": "企业版",
     "Following": "关注",
     "My activity": "我的动态",
-    "Iobox": "我的",
     "Profile": "个人主页",
     "Settings": "设置",
     "Notifications": "通知",
@@ -178,6 +177,28 @@
     "Follow your favorite AI creators": "关注您喜爱的 AI 创作者",
     "Access Space logs via API": "通过 API 访问空间日志",
     "Use an access token for authorization": "使用访问令牌进行授权",
+    "Train": "训练",
+    "Evaluate": "评估",
+    "Deploy to SageMaker": "部署至 SageMaker",
+    "Use in AutoTrain": "在 AutoTrain 中使用",
+    "Clone this model": "克隆此模型仓库",
+    "Clone this dataset": "克隆此数据集仓库",
+    "Clone this Space": "克隆此应用空间",
+    "Add file": "添加文件",
+    "Upload files": "上传多个文件",
+    "Commit message": "提交信息",
+    "Optional extended description": "可选的扩展描述...",
+    "Commit changes to main": "将更改提交到 main 分支",
+    "Commit to main": "提交到 main",
+    "Create a new branch for this commit and start a pull request": "为此提交创建新分支并提交 PR",
+    "Write": "撰写",
+    "Preview": "预览",
+    "Update comment": "更新评论",
+    "Cancel edit": "取消编辑",
+    "Reply to this discussion": "回复此讨论",
+    "Merge pull request": "合并拉取请求 (Merge PR)",
+    "Reopen discussion": "重新开启讨论",
+    "Commit time": "提交时间",
     "@comment_space": "================ 空间、设置、模型卡片详情 ================",
     "Model card": "模型卡片",
     "Files and versions": "文件与版本",
@@ -186,7 +207,7 @@
     "Training logs": "训练日志",
     "Deploy": "部署",
     "Use in Transformers": "在 Transformers 中使用",
-    "Hosted inference API": "托管推理 API",
+    "Hosted inference API": "在线推理 API",
     "Contributors": "贡献者",
     "Licenses": "许可证",
     "Likes": "点赞数",
@@ -195,7 +216,7 @@
     "Languages": "语言",
     "Main": "主要",
     "Libraries": "依赖库",
-    "Duplicate this Space": "复制此空间",
+    "Duplicate this Space": "复刻此空间 (Fork)",
     "Embed this Space": "嵌入此空间",
     "App": "应用",
     "Files": "文件",
@@ -293,7 +314,7 @@
     "All time visits": "历史总访问量",
     "Last month visits": "上月访问量",
     "Last week visits": "上周访问量",
-    "Duplicates": "被复制次数",
+    "Duplicates": "被复刻次数",
     "Xet storage": "Xet 存储",
     "Xet is HF Hub's new storage technology, offering up to 10x greater performance compared to Git LFS. Xet is currently": "Xet 是 HF Hub 的新一代存储技术，性能最高可达 Git LFS 的 10 倍。目前该功能处于 ",
     "Delete this Space": "删除此空间",
@@ -499,7 +520,7 @@
     "Add to collection": "加入收藏集",
     "Report this Space": "举报此空间",
     "Mute notifications": "免打扰模式",
-    "Synchronize duplicated Space": "同步重复的空间",
+    "Synchronize duplicated Space": "同步复刻的空间",
     "hour": "小时",
     "Restarting": "重启中",
     "per hour": "每小时",
@@ -663,7 +684,7 @@
     "Models citing this paper": "引用本文的模型",
     "Datasets citing this paper": "引用本文的数据集",
     "Spaces citing this paper": "引用本文的应用空间",
-    "Collections including this paper": "包含本文的收藏集",
+    "Collections including this paper": "收录本文的收藏集",
     "Paper author": "论文作者",
     "Paper submitter": "论文提交者",
     "Authors:": "作者：",
@@ -1640,9 +1661,6 @@
     "Tensor type": "张量类型",
     "Finetuned": "微调版",
     "Quantized": "量化版",
-    "Datasets used to train": "训练使用的数据集",
-    "Collections including": "包含收藏集",
-    "Collection including": "包含收藏集",
     "License:": "许可证：",
     "File Security Scans": "文件安全扫描",
     "not a model": "非模型文件",
@@ -1680,9 +1698,6 @@
     "to Parquet": "为 Parquet",
     "SQL Console": "SQL 控制台",
     "Embed": "嵌入",
-    "Duplicate": "复制",
-    "Duplicate this model": "复制此模型",
-    "Duplicate this dataset": "复制此数据集",
     "Request DOI": "申请 DOI",
     "Watch Activity": "关注动态",
     "Code of Conduct": "行为准则",
@@ -1701,8 +1716,6 @@
     "What's Excluded": "排除内容",
     "Launch Blog": "发布博客",
     "Model tree for": "模型树：",
-    "Space using": "使用的应用空间：",
-    "Spaces using": "使用的应用空间：",
     "+ 2 Spaces": "+ 2 应用空间",
     "Benefits": "优势",
     "Best Practices": "最佳实践",
@@ -1763,7 +1776,6 @@
     "Be the first to open a pull request on this repository": "成为第一个在此仓库发起拉取请求的人",
     "Metadata UI": "元数据编辑",
     "Commit changes": "提交更改",
-    "Commit changes to main": "提交更改到 main",
     "+ Add Base Model": "+ 添加基础模型",
     "+ Add Datasets": "+ 添加数据集",
     "+ Add Languages": "+ 添加语言",
@@ -1844,62 +1856,6 @@
       "刚刚更新"
     ],
     [
-      "^Updated about (\\d+) hours? ago$",
-      "更新于约 $1 小时前"
-    ],
-    [
-      "^Updated about (\\d+) minutes? ago$",
-      "更新于约 $1 分钟前"
-    ],
-    [
-      "^Updated (\\d+) years? ago$",
-      "更新于 $1 年前"
-    ],
-    [
-      "^Updated (\\d+) months? ago$",
-      "更新于 $1 个月前"
-    ],
-    [
-      "^Updated (\\d+) weeks? ago$",
-      "更新于 $1 周前"
-    ],
-    [
-      "^Updated (\\d+) days? ago$",
-      "更新于 $1 天前"
-    ],
-    [
-      "^Updated (\\d+) hours? ago$",
-      "更新于 $1 小时前"
-    ],
-    [
-      "^Updated (\\d+) minutes? ago$",
-      "更新于 $1 分钟前"
-    ],
-    [
-      "^Updated (\\d+) seconds? ago$",
-      "更新于 $1 秒前"
-    ],
-    [
-      "^about (\\d+) years? ago$",
-      "约 $1 年前"
-    ],
-    [
-      "^about (\\d+) months? ago$",
-      "约 $1 个月前"
-    ],
-    [
-      "^about (\\d+) days? ago$",
-      "约 $1 天前"
-    ],
-    [
-      "^about (\\d+) hours? ago$",
-      "约 $1 小时前"
-    ],
-    [
-      "^about (\\d+) minutes? ago$",
-      "约 $1 分钟前"
-    ],
-    [
       "^#(\\d+) opened about (\\d+) hours? ago by$",
       "#$1 约 $2 小时前打开，发起人："
     ],
@@ -1936,32 +1892,47 @@
       "#$1 $2 年前打开，发起人："
     ],
     [
-      "\\b(\\d+) years?\\s+ago\\b",
+      "\\bUpdated\\b",
+      "更新于",
+      "i"
+    ],
+    [
+      "\\babout\\b",
+      "大约",
+      "i"
+    ],
+    [
+      "\\b([\\d,]+)\\s+years?\\s+ago\\b",
       "$1 年前",
       "i"
     ],
     [
-      "\\b(\\d+) months?\\s+ago\\b",
+      "\\b([\\d,]+)\\s+months?\\s+ago\\b",
       "$1 个月前",
       "i"
     ],
     [
-      "\\b(\\d+) days?\\s+ago\\b",
+      "\\b([\\d,]+)\\s+weeks?\\s+ago\\b",
+      "$1 周前",
+      "i"
+    ],
+    [
+      "\\b([\\d,]+)\\s+days?\\s+ago\\b",
       "$1 天前",
       "i"
     ],
     [
-      "\\b(\\d+) hours?\\s+ago\\b",
+      "\\b([\\d,]+)\\s+hours?\\s+ago\\b",
       "$1 小时前",
       "i"
     ],
     [
-      "\\b(\\d+) minutes?\\s+ago\\b",
+      "\\b([\\d,]+)\\s+minutes?\\s+ago\\b",
       "$1 分钟前",
       "i"
     ],
     [
-      "\\b(\\d+) seconds?\\s+ago\\b",
+      "\\b([\\d,]+)\\s+seconds?\\s+ago\\b",
       "$1 秒前",
       "i"
     ],
@@ -2010,6 +1981,31 @@
       "i"
     ],
     [
+      "\\b([\\w\\.\\-]+) commented on a discussion\\b",
+      "$1 参与了讨论",
+      "i"
+    ],
+    [
+      "\\b([\\w\\.\\-]+) opened a pull request\\b",
+      "$1 发起了拉取请求",
+      "i"
+    ],
+    [
+      "\\b([\\w\\.\\-]+) merged a pull request\\b",
+      "$1 合并了拉取请求",
+      "i"
+    ],
+    [
+      "\\b([\\w\\.\\-]+) opened a discussion\\b",
+      "$1 发起了讨论",
+      "i"
+    ],
+    [
+      "\\b([\\w\\.\\-]+) liked a model\\b",
+      "$1 赞了一个模型",
+      "i"
+    ],
+    [
       "\\b(\\d+(?:,\\d+)*) downloads?\\b",
       "$1 次下载",
       "i"
@@ -2041,16 +2037,6 @@
     [
       "^Access to (?:model|dataset) .+ is restricted and you are not in the authorized list\\. Visit$",
       "该仓库访问受限，你不在授权名单中，请访问 "
-    ],
-    [
-      "\\bupdated\\b",
-      "更新于",
-      "i"
-    ],
-    [
-      "\\babout\\b",
-      "大约",
-      "i"
     ],
     [
       "\\b(\\d+(?:,\\d+)*) models?\\b",
@@ -2144,7 +2130,7 @@
     ],
     [
       "^Browse (\\d+) collections? that include this paper$",
-      "浏览 $1 个包含此论文的收藏集"
+      "浏览 $1 个收录此论文的收藏集"
     ],
     [
       "^Published on Jan (\\d{1,2})$",
@@ -2379,8 +2365,9 @@
       "/ $1"
     ],
     [
-      "^([\\d.,]+ ?[kMGTP]?B?) params?$",
-      "$1 参数"
+      "^([\\d.,]+ ?[kMGTP]?B?)\\s+params?$",
+      "$1 参数",
+      "i"
     ],
     [
       "^You have consumed \\$([\\d.]+) out of your \\$([\\d.]+) included credits\\.$",
