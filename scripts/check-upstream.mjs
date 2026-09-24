@@ -2,7 +2,9 @@
  * 上游词库检查与同步
  *
  * 职责:
- *   1. 按 upstream.config.json 逐个尝试上游仓库(含镜像),拉取词库文件
+ *   1. 按 upstream.config.json 逐个尝试上游仓库(含镜像),拉取词库文件。
+ *      逐候选源整组拉取 + 内容合法性校验:"HTTP 200 + 垃圾内容"
+ *      (上游误推/CDN 错误页)视为该候选源不可用,换下一个源,绝不污染本地快照
  *   2. 与 upstream.state.json 中记录的哈希比对,判断是否有更新
  *   3. 有更新 → 覆盖 sources/ 下的本地快照,递增 buildNumber,记录新版本号
  *   4. 上游不可用(删除/断网/改名)→ 记录状态并正常退出,绝不改动本地快照
@@ -21,6 +23,7 @@ import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { validateDict } from '../i18n-core.mjs';
 
 const execFileAsync = promisify(execFile);
 
@@ -136,6 +139,25 @@ function extractDictVersion(dictText) {
 }
 
 /**
+ * 校验拉取到的上游词库文本(纯函数,供单元测试)。
+ * 上游文件是外部输入:上游误推、镜像/CDN 返回错误页时可能拿到
+ * "HTTP 200 + 垃圾内容",这类"拉取成功但内容非法"绝不能覆盖本地快照——
+ * 否则快照被污染且 buildNumber 已递增,后续每次调度都因构建失败变红,
+ * 需要人工介入才能恢复。
+ * @returns {{ok: true} | {ok: false, reason: string}}
+ */
+function validateFetchedDictText(text) {
+    let dict;
+    try {
+        dict = JSON.parse(text);
+    } catch (e) {
+        return { ok: false, reason: `JSON 解析失败: ${e.message}` };
+    }
+    const err = validateDict(dict);
+    return err ? { ok: false, reason: `词库结构非法: ${err}` } : { ok: true };
+}
+
+/**
  * 候选源列表(按优先级):主仓库 raw → cdn 模板(jsDelivr,raw 被墙/被限时容灾,
  * 有缓存可能滞后)→ 各镜像仓库 raw。
  * 每个 candidate 是一个"整组源":同一 source 的全部文件必须来自同一个候选源,
@@ -181,7 +203,21 @@ async function fetchSource(source) {
                 break;
             }
         }
-        if (complete) return { ok: true, repoUsed: candidate.label, files };
+        if (complete) {
+            // 内容校验:"HTTP 200 + 垃圾内容"(上游误推/CDN 错误页)不能算拉取成功,
+            // 否则非法快照会覆盖本地并递增 buildNumber。校验失败视为该候选源不可用,
+            // 继续尝试下一个候选源,而不是直接采用。
+            // (与 main() 中 extractDictVersion 的假设一致:files[0] 为词库文件;
+            //  source 未配置文件时 dictText 为 undefined,同样视为校验失败)
+            const dictText = source.files.length ? files[source.files[0].local] : undefined;
+            const checked = validateFetchedDictText(dictText);
+            if (!checked.ok) {
+                lastError = new Error(`内容校验失败: ${checked.reason}`);
+                console.warn(`[upstream] 候选源 "${candidate.label}" 返回内容非法,跳过: ${checked.reason}`);
+                continue;
+            }
+            return { ok: true, repoUsed: candidate.label, files };
+        }
     }
     return { ok: false, error: lastError };
 }
@@ -276,4 +312,4 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     });
 }
 
-export { extractDictVersion, sha256, parseStateText, UnexpectedError, candidateSources };
+export { extractDictVersion, sha256, parseStateText, UnexpectedError, candidateSources, validateFetchedDictText };
