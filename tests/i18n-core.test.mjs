@@ -16,6 +16,7 @@ import {
     lookupStatic,
     lookupRegex,
     translateText,
+    replaceLiteral,
     validateDict,
     DEV_EXPORT_LIMIT,
     createUnmatchedCollector,
@@ -126,6 +127,33 @@ describe('translateText(完整入口:静态优先,正则兜底)', () => {
 
     test('正则开关关闭时未命中直接返回 null', () => {
         assert.strictEqual(translateText(index, rules, '3 hours ago', false), null);
+    });
+});
+
+describe('replaceLiteral(字面量安全替换——译文含 $ 模式字符不被误解释)', () => {
+    test('普通替换:只换首个命中段,保留前后空白', () => {
+        assert.strictEqual(replaceLiteral('  Models  ', 'Models', '模型'), '  模型  ');
+        assert.strictEqual(replaceLiteral('a a', 'a', 'b'), 'b a');
+    });
+
+    test("译文中的 $& / $` / $' / $$ 逐字写入,不被解释为替换模式", () => {
+        // String.replace 字符串形式会把这些写坏:('x'.replace('x','含 $&')) → '含 x'
+        assert.strictEqual(replaceLiteral('Price: x', 'Price: x', '含 $& 符号'), '含 $& 符号');
+        assert.strictEqual(replaceLiteral('Price: x', 'Price: x', '含 $` 符号'), '含 $` 符号');
+        assert.strictEqual(replaceLiteral('Price: x', 'Price: x', "含 $' 符号"), "含 $' 符号");
+        assert.strictEqual(replaceLiteral('Price: x', 'Price: x', '含 $$ 符号'), '含 $$ 符号');
+        // 真实词库形态:价格译文含 $20/$5 等(后跟数字的 $ 在 V8 下恰好按字面处理,
+        // 但 $&/$`/$'/$$ 必坏,统一走字面量替换才保险)
+        assert.strictEqual(
+            replaceLiteral('Starting at $20/user/month', 'Starting at $20/user/month', '每位用户每月 $20 起'),
+            '每位用户每月 $20 起'
+        );
+    });
+
+    test('search 不存在/空串/非字符串输入时原样返回', () => {
+        assert.strictEqual(replaceLiteral('abc', 'z', 'Z'), 'abc');
+        assert.strictEqual(replaceLiteral('abc', '', 'Z'), 'abc');
+        assert.strictEqual(replaceLiteral(null, 'a', 'b'), null);
     });
 });
 
