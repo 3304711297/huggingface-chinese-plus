@@ -122,8 +122,9 @@ function applyTranslation(textNode) {
     if (!trimmed || trimmed.length > MAX_TEXT_LENGTH || !HAS_LETTER.test(trimmed)) return;
     const zh = translateText(DICT_INDEX, REGEX_RULES, text, enableRegex);
     if (zh === null) { collectUnmatched(trimmed); return; }
-    // 只替换首个命中段,保留节点原文的前导/尾随空白,避免破坏布局
-    textNode.nodeValue = text.replace(trimmed, zh);
+    // 只替换首个命中段,保留节点原文的前导/尾随空白,避免破坏布局。
+    // 必须用字面量替换:译文含 $&/$`/$$ 等字符时,String.replace 会误解释为替换模式
+    textNode.nodeValue = replaceLiteral(text, trimmed, zh);
 }
 
 function collectTextNodes(root) {
@@ -155,7 +156,8 @@ function collectAttributes(root) {
             if (!trimmed || trimmed.length > MAX_TEXT_LENGTH || !HAS_LETTER.test(trimmed)) continue;
             const zh = translateText(DICT_INDEX, REGEX_RULES, value, enableRegex);
             if (zh === null) { collectUnmatched(trimmed); continue; }
-            el.setAttribute(attr, value.replace(trimmed, zh));
+            // 字面量替换,理由同 applyTranslation($ 替换模式防御)
+            el.setAttribute(attr, replaceLiteral(value, trimmed, zh));
         }
     }
 }
