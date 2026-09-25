@@ -112,6 +112,21 @@ export function translateText(index, compiled, text, enableRegex) {
     return null;
 }
 
+/**
+ * 字面量安全替换:把 text 中首次出现的 search 替换为 replacement,逐字写入。
+ * 不能用 String.replace(searchString, replacement) 的字符串形式——
+ * replacement 中的 `$&`/`$``/`$'`/`$$` 会被解释为替换模式,
+ * 译文一旦含有这类字符(如"含 $& 符号")就会被写坏。
+ * 用 indexOf + 拼接保证译文原样落盘。
+ * @returns {string} 替换后的文本;search 不存在时原样返回
+ */
+export function replaceLiteral(text, search, replacement) {
+    if (typeof text !== 'string' || typeof search !== 'string' || !search) return text;
+    const idx = text.indexOf(search);
+    if (idx === -1) return text;
+    return text.slice(0, idx) + String(replacement) + text.slice(idx + search.length);
+}
+
 /** 词库文件整体合法性校验(build 时兜底,防止上游格式变更悄悄产出空词库) */
 export function validateDict(dict) {
     if (!dict || typeof dict !== 'object') return '顶层不是对象';

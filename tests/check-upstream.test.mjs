@@ -16,6 +16,7 @@ import {
     parseStateText,
     UnexpectedError,
     candidateSources,
+    validateFetchedDictText,
 } from '../scripts/check-upstream.mjs';
 
 describe('extractDictVersion(词库版本提取)', () => {
@@ -110,6 +111,43 @@ describe('candidateSources(上游容灾候选源顺序与整组语义)', () => {
     test('未配置 cdn/mirrors 时只有主仓库一个候选源', () => {
         const minimal = { repo: 'a/b', branch: 'main' };
         assert.strictEqual(candidateSources(minimal).length, 1);
+    });
+});
+
+describe('validateFetchedDictText(上游拉取内容校验——垃圾内容不污染快照)', () => {
+    const good = JSON.stringify({
+        version: '2026.09.22 18:00:00',
+        translations: { Models: '模型' },
+        regexRules: [],
+    });
+
+    test('合法词库文本通过校验', () => {
+        assert.strictEqual(validateFetchedDictText(good).ok, true);
+    });
+
+    test('非 JSON 内容(404 页面/CDN 错误页)被拒绝', () => {
+        const r = validateFetchedDictText('<html>404 Not Found</html>');
+        assert.strictEqual(r.ok, false);
+        assert.match(r.reason, /JSON 解析失败/);
+    });
+
+    test('JSON 合法但词库结构非法(version 缺失/词条为空)被拒绝', () => {
+        for (const bad of [
+            JSON.stringify({ translations: { A: 'a' }, regexRules: [] }),
+            JSON.stringify({ version: '1', translations: {}, regexRules: [] }),
+            JSON.stringify({ version: '1', translations: { '@c': 'x' }, regexRules: [] }),
+            JSON.stringify({ version: '1' }),
+        ]) {
+            const r = validateFetchedDictText(bad);
+            assert.strictEqual(r.ok, false, `应拒绝: ${bad}`);
+            assert.match(r.reason, /词库结构非法/);
+        }
+    });
+
+    test('顶层非对象被拒绝', () => {
+        assert.strictEqual(validateFetchedDictText('null').ok, false);
+        assert.strictEqual(validateFetchedDictText('[1,2]').ok, false);
+        assert.strictEqual(validateFetchedDictText('').ok, false);
     });
 });
 

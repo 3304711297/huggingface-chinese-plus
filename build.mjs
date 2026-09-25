@@ -24,7 +24,7 @@ const read = (name) => readFileSync(join(root, name), 'utf8');
 /* ====== 发布配置 ====== */
 const REPO_OWNER = '3304711297';
 const REPO_NAME = 'huggingface-chinese-plus';
-const OUR_BASE = '1.3'; // 我们自己的功能版本号,有功能性改动(含引擎修复/兼容性调整)时手动递增(本次:开发者模式)
+const OUR_BASE = '1.4'; // 我们自己的功能版本号,有功能性改动(含引擎修复/兼容性调整)时手动递增(本次:译文 $ 替换模式转义修复 + 上游拉取内容校验)
 
 /**
  * 校验状态文件中的 buildNumber(纯函数,供单元测试)。
